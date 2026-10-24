@@ -56,13 +56,13 @@ public struct URLTemplates: Codable, Hashable, Sendable {
 
 /// Category patterns used to check a result's category against the requested type (TorrDroid `kb.d`).
 public struct TypeValidation: Codable, Hashable, Sendable {
-    public var video: String?
-    public var audio: String?
-    public var ebook: String?
-    public var software: String?
-    public var mature: String?
+    public var video: PatternList?
+    public var audio: PatternList?
+    public var ebook: PatternList?
+    public var software: PatternList?
+    public var mature: PatternList?
 
-    public init(video: String? = nil, audio: String? = nil, ebook: String? = nil, software: String? = nil, mature: String? = nil) {
+    public init(video: PatternList? = nil, audio: PatternList? = nil, ebook: PatternList? = nil, software: PatternList? = nil, mature: PatternList? = nil) {
         self.video = video
         self.audio = audio
         self.ebook = ebook
@@ -72,14 +72,52 @@ public struct TypeValidation: Codable, Hashable, Sendable {
 
     public func matches(category: String?, type: ContentType) -> Bool {
         guard let category = category?.lowercased(), !category.isEmpty else { return true }
-        let pattern = switch type {
-        case .video: video ?? ".*(video|movie|t(ele)?v|film|anime|porn|xxx).*"
-        case .audio: audio ?? ".*(music|audio|songs).*"
-        case .ebook: ebook ?? ".*(book|tutorial).*"
-        case .software: software ?? "^(?=.*(app|game|other|software))(?!.*(book|tutorial|movie|t(ele)?v|film|porn|xxx|video|audio|music)).*$"
+        let patterns = switch type {
+        case .video: video?.patterns
+        case .audio: audio?.patterns
+        case .ebook: ebook?.patterns
+        case .software: software?.patterns
         }
-        guard let regex = try? Regex(pattern) else { return true }
-        return category.wholeMatch(of: regex) != nil
+
+        let defaultPatterns = switch type {
+        case .video: [".*(video|movie|t(ele)?v|film|anime|porn|xxx).*"]
+        case .audio: [".*(music|audio|songs).*"]
+        case .ebook: [".*(book|tutorial).*"]
+        case .software: ["^(?=.*(app|game|other|software))(?!.*(book|tutorial|movie|t(ele)?v|film|porn|xxx|video|audio|music)).*$"]
+        }
+
+        let activePatterns = patterns ?? defaultPatterns
+        for pattern in activePatterns {
+            if let regex = try? Regex(pattern), category.wholeMatch(of: regex) != nil {
+                return true
+            }
+        }
+        return false
+    }
+}
+
+/// A list of patterns for a specific content type. Decodes from either a single String or an Array of Strings.
+public struct PatternList: Codable, Hashable, Sendable {
+    public let patterns: [String]
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let string = try? container.decode(String.self) {
+            self.patterns = [string]
+        } else if let array = try? container.decode([String].self) {
+            self.patterns = array
+        } else {
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Expected String or Array of Strings")
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        if patterns.count == 1 {
+            try container.encode(patterns[0])
+        } else {
+            try container.encode(patterns)
+        }
     }
 }
 
@@ -198,47 +236,4 @@ public struct JSONAPIRules: Codable, Hashable, Sendable {
     public var category: String?
     /// Results where `field` equals the given value are skipped (e.g. a "no results" placeholder row).
     public var skipWhen: [String: String]?
-    public var typeValidation: TypeValidation?
-
-    public init(url: URLTemplates, resultsPath: String? = nil, name: String, size: String? = nil, seeds: String? = nil,
-                leechers: String? = nil, infoHash: String? = nil, magnet: String? = nil, torrentURL: String? = nil,
-                category: String? = nil, skipWhen: [String: String]? = nil, typeValidation: TypeValidation? = nil) {
-        self.url = url
-        self.resultsPath = resultsPath
-        self.name = name
-        self.size = size
-        self.seeds = seeds
-        self.leechers = leechers
-        self.infoHash = infoHash
-        self.magnet = magnet
-        self.torrentURL = torrentURL
-        self.category = category
-        self.skipWhen = skipWhen
-        self.typeValidation = typeValidation
-    }
-}
-
-public enum ProviderImport {
-    public enum ImportError: LocalizedError {
-        case unrecognized
-
-        public var errorDescription: String? {
-            "Expected a provider, a list of providers, or a TorrDroid-style siteSettings object."
-        }
-    }
-
-    /// Accepts a Torrly provider, an array of them, or a TorrDroid `siteSettings` map (`{ "https://site": rules }`).
-    public static func providers(from data: Data) throws -> [ProviderDefinition] {
-        let decoder = JSONDecoder()
-        if let list = try? decoder.decode([ProviderDefinition].self, from: data) { return list }
-        if let single = try? decoder.decode(ProviderDefinition.self, from: data) { return [single] }
-        if let map = try? decoder.decode([String: HTMLSiteRules].self, from: data), !map.isEmpty {
-            return map.keys.sorted().compactMap { key in
-                guard let rules = map[key] else { return nil }
-                let name = URL(string: key)?.host() ?? key
-                return ProviderDefinition(name: name, html: rules)
-            }
-        }
-        throw ImportError.unrecognized
-    }
 }

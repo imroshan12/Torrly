@@ -1,5 +1,135 @@
 [
   {
+    "id": "4C7A9F1E-5D92-4E88-8C6B-7A9D5C8E2B1A",
+    "name": "apibay",
+    "isEnabled": true,
+    "json": {
+      "url": {
+        "default": "https://apibay.org/q.php?q={query}"
+      },
+      "resultsPath": "",
+      "name": "name",
+      "size": "size",
+      "seeds": "seeders",
+      "leechers": "leechers",
+      "infoHash": "info_hash",
+      "category": "category",
+      "typeValidation": {
+        "video": [
+          "^1[0-9]{2}$",
+          "^2[0-9]{2}$"
+        ],
+        "audio": [
+          "^3[0-9]{2}$"
+        ],
+        "ebook": [
+          "^5[0-9]{2}$"
+        ],
+        "software": [
+          "^4[0-9]{2}$"
+        ],
+        "mature": [
+          "^8[0-9]{2}$"
+        ]
+      }
+    }
+  },
+  {
+    "id": "E2D1C9B8-4F3A-4B2C-A1D0-E9F8D7C6B5A4",
+    "name": "lovekat",
+    "isEnabled": false,
+    "html": {
+      "request": {
+        "url": {
+          "default": "https://lovekat.org"
+        }
+      },
+      "rows": "table > tbody > tr",
+      "name": {
+        "qs": "td:eq(0)"
+      },
+      "size": {
+        "qs": "td:eq(1)"
+      },
+      "seeds": {
+        "qs": "td:eq(2)"
+      },
+      "leechers": {
+        "qs": "td:eq(3)"
+      }
+    }
+  },
+  {
+    "id": "B7E6A1C8-6D4F-4A99-9E2D-2C3B4A5D6E7F",
+    "name": "knaben",
+    "isEnabled": true,
+    "html": {
+      "request": {
+        "url": {
+          "default": "https://knaben.org/search/%s/0/1/seeders"
+        }
+      },
+      "rows": "table > tbody > tr[data-id]",
+      "name": {
+        "qs": "a",
+        "access": "text"
+      },
+      "magnet": {
+        "qs": "a",
+        "access": "href"
+      },
+      "size": {
+        "qs": "td:eq(2)"
+      },
+      "seeds": {
+        "qs": "td:eq(4)"
+      },
+      "leechers": {
+        "qs": "td:eq(5)"
+      },
+      "type": {
+        "qs": "td:eq(0)"
+      }
+    }
+  },
+  {
+    "id": "D5E8F3A1-2B9C-4D8E-9F0A-1C2D3E4F5G6H",
+    "name": "limetorrent",
+    "isEnabled": true,
+    "html": {
+      "request": {
+        "url": {
+          "default": "https://limetorrent.store/search?catname=&q=%s"
+        }
+      },
+      "rows": "table.table2 > tbody > tr",
+      "name": {
+        "qs": "td:eq(0)"
+      },
+      "size": {
+        "qs": "td:eq(2)"
+      },
+      "seeds": {
+        "qs": "td:eq(4)"
+      },
+      "leechers": {
+        "qs": "td:eq(5)"
+      },
+      "more": {
+        "qs": "td:eq(0) a",
+        "page": {
+          "magnet": {
+            "qs": "a",
+            "access": "href"
+          },
+          "type": {
+            "qs": "td:eq(0)"
+          }
+        }
+      }
+    }
+  },
+  {
     "id": "7B0E3C2A-1F7D-4C55-9A4E-5B1A2D3C4E01",
     "name": "Internet Archive",
     "isEnabled": true,
@@ -22,6 +152,546 @@
         "ebook": "texts",
         "software": "software"
       }
+    }
+  },
+  {
+    "id": "3e264732-cb54-42f5-963c-90731959aff3",
+    "name": "kattracker",
+    "isEnabled": false,
+    "json": {
+      "url": {
+        "default": "https://{mirror}/search?q={query}"
+      },
+      "resultsPath": "",
+      "name": "name",
+      "size": "size",
+      "seeds": "seeders",
+      "leechers": "leechers",
+      "infoHash": "info_hash",
+      "category": "category",
+      "typeValidation": {}
+    }
+  },
+  {
+    "id": "c3fed175-2eb0-4793-a8e3-bf6a93bfb579",
+    "name": "247prox",
+    "isEnabled": false,
+    "json": {
+      "url": {
+        "default": "https://{mirror}/search?q={query}"
+      },
+      "resultsPath": "",
+      "name": "name",
+      "size": "size",
+      "seeds": "seeders",
+      "leechers": "leechers",
+      "infoHash": "info_hash",
+      "category": "category",
+      "typeValidation": {}
+    }
+  },
+  {
+    "id": "e89cc298-e3a2-49d2-bcce-f06311674e08",
+    "name": "tpb.vip",
+    "isEnabled": false,
+    "json": {
+      "url": {
+        "default": "https://{mirror}/search?q={query}"
+      },
+      "resultsPath": "",
+      "name": "name",
+      "size": "size",
+      "seeds": "seeders",
+      "leechers": "leechers",
+      "infoHash": "info_hash",
+      "category": "category",
+      "typeValidation": {}
+    }
+  },
+  {
+    "id": "7ec3f333-3866-4827-840b-833b10a5a1b2",
+    "name": "tpb.world",
+    "isEnabled": false,
+    "json": {
+      "url": {
+        "default": "https://{mirror}/search?q={query}"
+      },
+      "resultsPath": "",
+      "name": "name",
+      "size": "size",
+      "seeds": "seeders",
+      "leechers": "leechers",
+      "infoHash": "info_hash",
+      "category": "category",
+      "typeValidation": {}
+    }
+  },
+  {
+    "id": "ed023d73-ff8f-49d0-ade3-ea1651d59f2b",
+    "name": "pirateproxy.dev",
+    "isEnabled": false,
+    "json": {
+      "url": {
+        "default": "https://{mirror}/search?q={query}"
+      },
+      "resultsPath": "",
+      "name": "name",
+      "size": "size",
+      "seeds": "seeders",
+      "leechers": "leechers",
+      "infoHash": "info_hash",
+      "category": "category",
+      "typeValidation": {}
+    }
+  },
+  {
+    "id": "6966eeb0-35ea-4c38-9715-bbff0988d4a6",
+    "name": "1337x.unblockit.link",
+    "isEnabled": false,
+    "json": {
+      "url": {
+        "default": "https://{mirror}/search?q={query}"
+      },
+      "resultsPath": "",
+      "name": "name",
+      "size": "size",
+      "seeds": "seeders",
+      "leechers": "leechers",
+      "infoHash": "info_hash",
+      "category": "category",
+      "typeValidation": {}
+    }
+  },
+  {
+    "id": "af578934-6a9a-450a-aca6-a497083f438e",
+    "name": "zooqle",
+    "isEnabled": false,
+    "json": {
+      "url": {
+        "default": "https://{mirror}/search?q={query}"
+      },
+      "resultsPath": "",
+      "name": "name",
+      "size": "size",
+      "seeds": "seeders",
+      "leechers": "leechers",
+      "infoHash": "info_hash",
+      "category": "category",
+      "typeValidation": {}
+    }
+  },
+  {
+    "id": "858a08a0-6d31-4b21-9263-8fba6aecf76e",
+    "name": "idope",
+    "isEnabled": false,
+    "json": {
+      "url": {
+        "default": "https://{mirror}/search?q={query}"
+      },
+      "resultsPath": "",
+      "name": "name",
+      "size": "size",
+      "seeds": "seeders",
+      "leechers": "leechers",
+      "infoHash": "info_hash",
+      "category": "category",
+      "typeValidation": {}
+    }
+  },
+  {
+    "id": "ab117e49-f386-4d6d-aadc-050240684cab",
+    "name": "torlock",
+    "isEnabled": false,
+    "json": {
+      "url": {
+        "default": "https://{mirror}/search?q={query}"
+      },
+      "resultsPath": "",
+      "name": "name",
+      "size": "size",
+      "seeds": "seeders",
+      "leechers": "leechers",
+      "infoHash": "info_hash",
+      "category": "category",
+      "typeValidation": {}
+    }
+  },
+  {
+    "id": "05441c06-80b2-4acb-a6fd-1b6256d191d7",
+    "name": "limetorrents.lol",
+    "isEnabled": false,
+    "json": {
+      "url": {
+        "default": "https://{mirror}/search?q={query}"
+      },
+      "resultsPath": "",
+      "name": "name",
+      "size": "size",
+      "seeds": "seeders",
+      "leechers": "leechers",
+      "infoHash": "info_hash",
+      "category": "category",
+      "typeValidation": {}
+    }
+  },
+  {
+    "id": "c668124a-8a89-4c92-a121-6943ac680513",
+    "name": "torrentz2/torrentz2k",
+    "isEnabled": false,
+    "json": {
+      "url": {
+        "default": "https://{mirror}/search?q={query}"
+      },
+      "resultsPath": "",
+      "name": "name",
+      "size": "size",
+      "seeds": "seeders",
+      "leechers": "leechers",
+      "infoHash": "info_hash",
+      "category": "category",
+      "typeValidation": {}
+    }
+  },
+  {
+    "id": "42992e76-bb72-43b8-aa84-bb87258aaf18",
+    "name": "bitsearch",
+    "isEnabled": false,
+    "json": {
+      "url": {
+        "default": "https://{mirror}/search?q={query}"
+      },
+      "resultsPath": "",
+      "name": "name",
+      "size": "size",
+      "seeds": "seeders",
+      "leechers": "leechers",
+      "infoHash": "info_hash",
+      "category": "category",
+      "typeValidation": {}
+    }
+  },
+  {
+    "id": "6b55ebe7-d330-40bd-bec7-de35264f5637",
+    "name": "torrentdownload.info",
+    "isEnabled": false,
+    "json": {
+      "url": {
+        "default": "https://{mirror}/search?q={query}"
+      },
+      "resultsPath": "",
+      "name": "name",
+      "size": "size",
+      "seeds": "seeders",
+      "leechers": "leechers",
+      "infoHash": "info_hash",
+      "category": "category",
+      "typeValidation": {}
+    }
+  },
+  {
+    "id": "dcd562d6-502f-4cf2-886b-d4ccae1ce61d",
+    "name": "the punycode limetorrents",
+    "isEnabled": false,
+    "json": {
+      "url": {
+        "default": "https://{mirror}/search?q={query}"
+      },
+      "resultsPath": "",
+      "name": "name",
+      "size": "size",
+      "seeds": "seeders",
+      "leechers": "leechers",
+      "infoHash": "info_hash",
+      "category": "category",
+      "typeValidation": {}
+    }
+  },
+  {
+    "id": "80c5da97-3759-4c27-86ef-9ad10a57a2bc",
+    "name": "thepibay",
+    "isEnabled": false,
+    "json": {
+      "url": {
+        "default": "https://{mirror}/search?q={query}"
+      },
+      "resultsPath": "",
+      "name": "name",
+      "size": "size",
+      "seeds": "seeders",
+      "leechers": "leechers",
+      "infoHash": "info_hash",
+      "category": "category",
+      "typeValidation": {}
+    }
+  },
+  {
+    "id": "f074c8d8-b77f-4ab9-909f-7ec859d382ed",
+    "name": "{ qs: \"td:eq(0)\" }",
+    "isEnabled": false,
+    "html": {
+      "request": {
+        "url": {
+          "default": "https://kattracker.com/usearch/{query}/?field=size&sorder=desc"
+        }
+      },
+      "rows": "table > tbody > tr",
+      "name": "{ qs: \"td:eq(0)\" }",
+      "size": "{ qs: \"td:eq(1)\" }",
+      "seeds": "{ qs: \"td:eq(3)\" }",
+      "leechers": "{ qs: \"td:eq(4)\" }",
+      "magnet": "{ qs: \"td:eq(0) a\", access: \"href\" }"
+    }
+  },
+  {
+    "id": "34c9899d-bab3-4aaf-a088-9f5c7d7907d0",
+    "name": "{ qs: \"td:eq(0)\" }",
+    "isEnabled": false,
+    "html": {
+      "request": {
+        "url": {
+          "default": "https://247prox.com/search?q={query}"
+        }
+      },
+      "rows": "table > tr",
+      "name": "{ qs: \"td:eq(0)\" }",
+      "size": "{ qs: \"td:eq(1)\" }",
+      "seeds": "{ qs: \"td:eq(2)\" }",
+      "leechers": "{ qs: \"td:eq(3)\" }",
+      "magnet": "{ qs: \"td:eq(0) a\", access: \"href\" }"
+    }
+  },
+  {
+    "id": "05f4f858-bc69-4c10-b357-ca5a02778f20",
+    "name": "{ qs: \"td:eq(0)\" }",
+    "isEnabled": false,
+    "html": {
+      "request": {
+        "url": {
+          "default": "https://tpb.vip/search?q={query}"
+        }
+      },
+      "rows": "table > tr",
+      "name": "{ qs: \"td:eq(0)\" }",
+      "size": "{ qs: \"td:eq(1)\" }",
+      "seeds": "{ qs: \"td:eq(3)\" }",
+      "leechers": "{ qs: \"td:eq(4)\" }",
+      "magnet": "{ qs: \"td:eq(0) a\", access: \"href\" }"
+    }
+  },
+  {
+    "id": "844acac2-da93-4adc-8de5-ec84fdb90343",
+    "name": "{ qs: \"td:eq(0)\" }",
+    "isEnabled": false,
+    "html": {
+      "request": {
+        "url": {
+          "default": "https://tpb.world/search?q={query}"
+        }
+      },
+      "rows": "table > tr",
+      "name": "{ qs: \"td:eq(0)\" }",
+      "size": "{ qs: \"td:eq(1)\" }",
+      "seeds": "{ qs: \"td:eq(3)\" }",
+      "leechers": "{ qs: \"td:eq(4)\" }",
+      "magnet": "{ qs: \"td:eq(0) a\", access: \"href\" }"
+    }
+  },
+  {
+    "id": "5b460ddc-8e03-4322-bad4-67599f169fdb",
+    "name": "{ qs: \"td:eq(0)\" }",
+    "isEnabled": false,
+    "html": {
+      "request": {
+        "url": {
+          "default": "https://pirateproxy.dev/search?q={query}"
+        }
+      },
+      "rows": "table > tr",
+      "name": "{ qs: \"td:eq(0)\" }",
+      "size": "{ qs: \"td:eq(1)\" }",
+      "seeds": "{ qs: \"td:eq(3)\" }",
+      "leechers": "{ qs: \"td:eq(4)\" }",
+      "magnet": "{ qs: \"td:eq(0) a\", access: \"href\" }"
+    }
+  },
+  {
+    "id": "323d9aa4-cc56-4615-b895-e6b724854dc6",
+    "name": "{ qs: \"td:eq(0)\" }",
+    "isEnabled": false,
+    "html": {
+      "request": {
+        "url": {
+          "default": "https://1337x.unblockit.link/search?q={query}"
+        }
+      },
+      "rows": "table > tr",
+      "name": "{ qs: \"td:eq(0)\" }",
+      "size": "{ qs: \"td:eq(1)\" }",
+      "seeds": "{ qs: \"td:eq(3)\" }",
+      "leechers": "{ qs: \"td:eq(4)\" }",
+      "magnet": "{ qs: \"td:eq(0) a\", access: \"href\" }"
+    }
+  },
+  {
+    "id": "51f8f224-05d3-4aa0-89c3-766140716ac1",
+    "name": "{ qs: \"td:eq(0)\" }",
+    "isEnabled": false,
+    "html": {
+      "request": {
+        "url": {
+          "default": "https://zooqle.com/search?q={query}"
+        }
+      },
+      "rows": "table > tr",
+      "name": "{ qs: \"td:eq(0)\" }",
+      "size": "{ qs: \"td:eq(1)\" }",
+      "seeds": "{ qs: \"td:eq(2)\" }",
+      "leechers": "{ qs: \"td:eq(3)\" }",
+      "magnet": "{ qs: \"td:eq(0) a\", access: \"href\" }"
+    }
+  },
+  {
+    "id": "3c4aec7c-4995-4cc9-979d-40b40f230a7a",
+    "name": "{ qs: \"td:eq(0)\" }",
+    "isEnabled": false,
+    "html": {
+      "request": {
+        "url": {
+          "default": "https://idope.com/search?q={query}"
+        }
+      },
+      "rows": "table > tr",
+      "name": "{ qs: \"td:eq(0)\" }",
+      "size": "{ qs: \"td:eq(1)\" }",
+      "seeds": "{ qs: \"td:eq(2)\" }",
+      "leechers": "{ qs: \"td:eq(3)\" }",
+      "magnet": "{ qs: \"td:eq(0) a\", access: \"href\" }"
+    }
+  },
+  {
+    "id": "c79ed9f1-b4df-4c5a-8b20-c1c475bc4722",
+    "name": "{ qs: \"td:eq(0)\" }",
+    "isEnabled": false,
+    "html": {
+      "request": {
+        "url": {
+          "default": "https://torlock.com/search?q={query}"
+        }
+      },
+      "rows": "table > tr",
+      "name": "{ qs: \"td:eq(0)\" }",
+      "size": "{ qs: \"td:eq(1)\" }",
+      "seeds": "{ qs: \"td:eq(2)\" }",
+      "leechers": "{ qs: \"td:eq(3)\" }",
+      "magnet": "{ qs: \"td:eq(0) a\", access: \"href\" }"
+    }
+  },
+  {
+    "id": "bfcfa1b5-40e1-4a9c-8c78-30a1ea0bd60e",
+    "name": "{ qs: \"td:eq(0)\" }",
+    "isEnabled": false,
+    "html": {
+      "request": {
+        "url": {
+          "default": "https://limetorrents.lol/search?q={query}"
+        }
+      },
+      "rows": "table > tr",
+      "name": "{ qs: \"td:eq(0)\" }",
+      "size": "{ qs: \"td:eq(1)\" }",
+      "seeds": "{ qs: \"td:eq(2)\" }",
+      "leechers": "{ qs: \"td:eq(3)\" }",
+      "magnet": "{ qs: \"td:eq(0) a\", access: \"href\" }"
+    }
+  },
+  {
+    "id": "30e78aa0-e26a-409e-a4ea-70301aaa3f37",
+    "name": "{ qs: \"td:eq(0)\" }",
+    "isEnabled": false,
+    "html": {
+      "request": {
+        "url": {
+          "default": "https://torrentz2.com/search?q={query}"
+        }
+      },
+      "rows": "table > tr",
+      "name": "{ qs: \"td:eq(0)\" }",
+      "size": "{ qs: \"td:eq(1)\" }",
+      "seeds": "{ qs: \"td:eq(2)\" }",
+      "leechers": "{ qs: \"td:eq(3)\" }",
+      "magnet": "{ qs: \"td:eq(0) a\", access: \"href\" }"
+    }
+  },
+  {
+    "id": "51e3f392-299a-4bb5-9849-8a1dc503a8dd",
+    "name": "{ qs: \"td:eq(0)\" }",
+    "isEnabled": false,
+    "html": {
+      "request": {
+        "url": {
+          "default": "https://bitsearch.com/search?q={query}"
+        }
+      },
+      "rows": "table > tr",
+      "name": "{ qs: \"td:eq(0)\" }",
+      "size": "{ qs: \"td:eq(1)\" }",
+      "seeds": "{ qs: \"td:eq(2)\" }",
+      "leechers": "{ qs: \"td:eq(3)\" }",
+      "magnet": "{ qs: \"td:eq(0) a\", access: \"href\" }"
+    }
+  },
+  {
+    "id": "83183b6e-4445-4cf9-a52d-6b63a0812edf",
+    "name": "{ qs: \"td:eq(0)\" }",
+    "isEnabled": false,
+    "html": {
+      "request": {
+        "url": {
+          "default": "https://torrentdownload.info/search?q={query}"
+        }
+      },
+      "rows": "table > tr",
+      "name": "{ qs: \"td:eq(0)\" }",
+      "size": "{ qs: \"td:eq(1)\" }",
+      "seeds": "{ qs: \"td:eq(2)\" }",
+      "leechers": "{ qs: \"td:eq(3)\" }",
+      "magnet": "{ qs: \"td:eq(0) a\", access: \"href\" }"
+    }
+  },
+  {
+    "id": "eb796fec-c82f-4c94-876b-6e008cb8c1a6",
+    "name": "{ qs: \"td:eq(0)\" }",
+    "isEnabled": false,
+    "html": {
+      "request": {
+        "url": {
+          "default": "https://limetorrents.com/search?q={query}"
+        }
+      },
+      "rows": "table > tr",
+      "name": "{ qs: \"td:eq(0)\" }",
+      "size": "{ qs: \"td:eq(1)\" }",
+      "seeds": "{ qs: \"td:eq(2)\" }",
+      "leechers": "{ qs: \"td:eq(3)\" }",
+      "magnet": "{ qs: \"td:eq(0) a\", access: \"href\" }"
+    }
+  },
+  {
+    "id": "87c4052c-dae0-4ff9-8bc8-643601452b32",
+    "name": "{ qs: \"td:eq(0)\" }",
+    "isEnabled": false,
+    "html": {
+      "request": {
+        "url": {
+          "default": "https://thepibay.com/search?q={query}"
+        }
+      },
+      "rows": "table > tr",
+      "name": "{ qs: \"td:eq(0)\" }",
+      "size": "{ qs: \"td:eq(1)\" }",
+      "seeds": "{ qs: \"td:eq(2)\" }",
+      "leechers": "{ qs: \"td:eq(3)\" }",
+      "magnet": "{ qs: \"td:eq(0) a\", access: \"href\" }"
     }
   }
 ]

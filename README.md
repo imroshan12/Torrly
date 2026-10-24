@@ -197,6 +197,13 @@ JSON API providers name the fields to read from each result (`name`, `size`, `se
 `magnet`, or a `torrentURL` template such as `https://host/download/{id}.torrent`). See
 `Packages/TorrlyCore/Sources/TorrlyCore/Resources/default-providers.json`.
 
+## Search Providers
+
+Torrly includes a variety of search providers. Some are enabled by default, while others are available as fallbacks:
+
+- **Active Providers**: apibay, knaben, limetorrent
+- **Fallback Pool**: katracker, 247prox, tpb.vip, tpb.world, pirateproxy.dev, 1337x.unblockit.link, zooqle, idope, torlock, limetorrents.lol, torrentz2/torrentz2k, bitsearch, torrentdownload.info, the punycode limetorrents, thepibay
+
 ## License
 
 Torrly is released under the [MIT License](LICENSE). It includes libtorrent (BSD), OpenSSL (Apache 2.0),

@@ -71,6 +71,9 @@ struct AppSettings: Codable, Equatable {
     var proxyUsername = ""
     var proxyPassword = ""
     var searchAlgorithm = SearchAlgorithm.hybrid
+    
+    /// Version of the provider list migration.
+    var providersVersion = 0
 
     var listenPort: Int { randomizePort ? randomPort : port }
 
