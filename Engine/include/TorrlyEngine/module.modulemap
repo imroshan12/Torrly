@@ -1,0 +1,6 @@
+module TorrlyEngine {
+    umbrella header "TorrlyEngine.h"
+    export *
+    link "c++"
+    link framework "SystemConfiguration"
+}

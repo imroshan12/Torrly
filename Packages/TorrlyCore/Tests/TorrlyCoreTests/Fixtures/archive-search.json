@@ -1,0 +1,10 @@
+{
+  "responseHeader": { "status": 0 },
+  "response": {
+    "numFound": 2,
+    "docs": [
+      { "identifier": "ubuntu-20.04-arm64-utm", "title": "Ubuntu 20.04 (arm64) for UTM", "item_size": 3870948735, "mediatype": "software", "downloads": 521177 },
+      { "identifier": "ubuntu-mate-16.04", "title": "Ubuntu MATE 16.04.6 LTS desktop amd64", "item_size": 1800000000, "mediatype": "software", "downloads": 1200 }
+    ]
+  }
+}

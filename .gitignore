@@ -1,0 +1,38 @@
+# Engine build: libtorrent/OpenSSL sources and the compiled framework are recreated by scripts/build-engine.sh
+build/
+Vendor/src/
+Vendor/TorrlyEngine.xcframework/
+build-engine.log
+
+# Xcode project is generated from project.yml (`xcodegen generate`); it also holds your signing team
+*.xcodeproj/
+*.xcworkspace/
+xcuserdata/
+DerivedData/
+*.xcresult/
+*.xcarchive/
+*.ipa
+*.dSYM/
+*.dSYM.zip
+
+# Swift Package Manager (Package.resolved stays committed to pin dependency versions)
+.build/
+.swiftpm/
+
+# Signing material and secrets: never commit
+*.p12
+*.cer
+*.mobileprovision
+*.provisionprofile
+*.p8
+.env
+.env.*
+Local.xcconfig
+*.local.xcconfig
+
+# Editors and OS files
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store

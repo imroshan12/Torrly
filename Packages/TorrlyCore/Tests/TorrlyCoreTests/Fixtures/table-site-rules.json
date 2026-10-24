@@ -1,0 +1,28 @@
+{
+  "https://table.example": {
+    "request": { "type": "GET", "url": { "default": "https://table.example/search/%s/0/1/seeders" } },
+    "rows": "table > tbody > tr",
+    "name": "td:eq(1) > a:eq(0)",
+    "seeds": "td:eq(4)",
+    "leechers": "td:eq(5)",
+    "size": "td:eq(2)",
+    "magnet": { "qs": "td:eq(1) > a:eq(0)", "access": "href" },
+    "type": "td:eq(0) > a:first-of-type",
+    "typeValidation": { "software": ".*software.*", "video": ".*video.*" }
+  },
+  "https://detail.example": {
+    "request": { "type": "GET", "url": { "default": "https://detail.example/search?q=%s" } },
+    "rows": "tbody.torsearch > tr",
+    "name": "td:eq(0) a:last-child",
+    "seeds": "td:eq(3)",
+    "leechers": "td:eq(4)",
+    "size": "td:eq(2)",
+    "more": {
+      "qs": "td:eq(0) a:last-child",
+      "page": {
+        "magnet": { "qs": "div.download_magnet > a", "access": "href" },
+        "hash": "div.torrentinfo tbody > tr:eq(0) > td:last-child"
+      }
+    }
+  }
+}
