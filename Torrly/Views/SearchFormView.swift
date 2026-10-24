@@ -1,7 +1,7 @@
 import SwiftUI
 import TorrlyCore
 
-/// The SEARCH tab: keyword, retry interval, torrent type and "Download if available" (TorrDroid's search page).
+/// The SEARCH tab: keyword, torrent type, retry interval and "Download if available" (TorrDroid's search page).
 struct SearchFormView: View {
     @Environment(AppModel.self) private var model
     @State private var keyword = ""
@@ -9,35 +9,51 @@ struct SearchFormView: View {
     @State private var type: ContentType?
     @State private var autoDownload = false
     @State private var maxSize = ""
+    @State private var submitted = 0
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                SearchFields(keyword: $keyword, interval: $interval, type: $type, autoDownload: $autoDownload, maxSize: $maxSize)
+            VStack(alignment: .leading, spacing: 22) {
+                SearchFields(keyword: $keyword, interval: $interval, type: $type, autoDownload: $autoDownload,
+                             maxSize: $maxSize, showRecent: true)
                     .onSubmit(submit)
-                    .zIndex(1) // keeps the suggestion dropdown above the SEARCH button
+                    .zIndex(1) // keeps the suggestion dropdown above everything below it
 
                 Button(action: submit) {
-                    Text("SEARCH")
+                    Label("Search", systemImage: "magnifyingglass")
                         .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 54)
                         .foregroundStyle(.white)
-                        .frame(width: 150, height: 46)
-                        .background(canSubmit ? Theme.primary : Color.gray, in: RoundedRectangle(cornerRadius: 4))
+                        .background(canSubmit ? Theme.primary : Color.gray.opacity(0.45),
+                                    in: RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.top, 8)
+                .buttonStyle(.plain)
+                .animation(.easeInOut(duration: 0.2), value: canSubmit)
+                .accessibilityHint(canSubmit ? "" : "Enter a keyword and choose a torrent type first")
             }
-            .padding(20)
+            .padding(.horizontal, 16)
+            .padding(.top, 20)
+            .padding(.bottom, 100)
+            .containerRelativeFrame(.vertical, alignment: .top)
+            // Tapping empty space ends editing and closes the suggestions.
+            .background(Color.clear.contentShape(Rectangle()).onTapGesture { endEditing() })
         }
         .scrollDismissesKeyboard(.interactively)
+        .background(Theme.screenBackground)
+        .sensoryFeedback(.success, trigger: submitted)
     }
 
     private var canSubmit: Bool {
         !keyword.trimmingCharacters(in: .whitespaces).isEmpty && type != nil
     }
 
-    private func submit() {
+    private func endEditing() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+
+    private func submit() {
+        endEditing()
         let size = Int(maxSize) ?? 0
         if !maxSize.isEmpty, size <= 0 {
             model.toast = "Please enter a valid size limit"
@@ -47,6 +63,7 @@ struct SearchFormView: View {
             model.toast = error
             return
         }
+        submitted += 1
         keyword = ""
         maxSize = ""
     }
@@ -60,6 +77,7 @@ struct SearchFields: View {
     @Binding var type: ContentType?
     @Binding var autoDownload: Bool
     @Binding var maxSize: String
+    var showRecent = false
     @Environment(AppModel.self) private var model
     @FocusState private var keywordFocused: Bool
     @State private var suggestions: [String] = []
@@ -67,68 +85,133 @@ struct SearchFields: View {
     @State private var picked = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 24) {
-            VStack(spacing: 4) {
-                TextField("Enter Keywords to search torrent", text: $keyword)
-                    .font(.title3)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                    .submitLabel(.search)
-                    .focused($keywordFocused)
-                Rectangle().fill(Color.secondary.opacity(0.5)).frame(height: 1)
-            }
-            .overlay(alignment: .topLeading) {
-                if keywordFocused, !suggestions.isEmpty { suggestionList.offset(y: 44) }
-            }
-            .zIndex(1)
-            .task(id: keyword) { await loadSuggestions() }
-            .onChange(of: keywordFocused) { _, focused in if !focused { suggestions = [] } }
+        VStack(alignment: .leading, spacing: 22) {
+            searchField
+                .overlay(alignment: .topLeading) {
+                    if keywordFocused, !suggestions.isEmpty { suggestionList.offset(y: 62) }
+                }
+                .zIndex(1)
+                .task(id: keyword) { await loadSuggestions() }
+                .onChange(of: keywordFocused) { _, focused in
+                    if !focused { suggestions = [] }
+                    model.editingSearch = focused
+                }
 
-            HStack(alignment: .bottom, spacing: 16) {
-                VStack(alignment: .trailing, spacing: 6) {
-                    HelpButton(title: "Retry Interval",
-                               message: "Time after which search should be attempted again if it was not successful in last attempt.")
-                    Picker("Retry Interval", selection: $interval) {
-                        ForEach(RetryInterval.allCases) { option in
-                            Text(option == .never ? "Retry Interval" : option.title).tag(option)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .underlined()
-                }
-                VStack(alignment: .trailing, spacing: 6) {
-                    HelpButton(title: "Torrent Type", message: "Select the file type of the torrent you wish to download")
-                    Picker("Torrent Type", selection: $type) {
-                        Text("Torrent Type").tag(ContentType?.none)
-                        ForEach(ContentType.allCases) { option in
-                            Text(option.title).tag(Optional(option))
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .underlined()
-                }
-            }
-            .tint(.primary)
-
-            HStack {
-                Toggle(isOn: $autoDownload) {
-                    Text("Download if available").font(.title3)
-                }
-                .toggleStyle(CheckboxToggleStyle())
-                Spacer()
-                HelpButton(title: "Download if available",
-                           message: "Let the app search and download a torrent if it's reliable and matches the filters above")
+            if showRecent, !recentKeywords.isEmpty, keyword.isEmpty {
+                recentSearches
             }
 
-            if autoDownload {
+            VStack(alignment: .leading, spacing: 10) {
                 HStack {
-                    TextField("Max size in MB (optional)", text: $maxSize)
-                        .keyboardType(.numberPad)
-                    Text("MB").foregroundStyle(.secondary)
+                    SectionTitle("Torrent type")
+                    Spacer()
+                    HelpButton(title: "Torrent Type", message: "Select the file type of the torrent you wish to download")
                 }
-                .underlined()
+                HStack(spacing: 10) {
+                    ForEach(ContentType.allCases) { option in
+                        TypeChip(type: option, selected: type == option) {
+                            withAnimation(.snappy(duration: 0.2)) { type = option }
+                        }
+                    }
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 10) {
+                SectionTitle("Options")
+                VStack(spacing: 0) {
+                    OptionRow(systemImage: "arrow.clockwise", title: "Retry if nothing found",
+                              help: ("Retry Interval", "Time after which search should be attempted again if it was not successful in last attempt.")) {
+                        Picker("Retry interval", selection: $interval) {
+                            ForEach(RetryInterval.allCases) { option in
+                                Text(option == .never ? "Off" : "Every \(option.title)").tag(option)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .labelsHidden()
+                        .tint(Theme.primary)
+                    }
+                    Divider().padding(.leading, 56)
+                    OptionRow(systemImage: "bolt.fill", title: "Download if available",
+                              help: ("Download if available", "Let the app search and download a torrent if it's reliable and matches the filters above")) {
+                        Toggle("Download if available", isOn: $autoDownload.animation())
+                            .labelsHidden()
+                            .tint(Theme.primary)
+                    }
+                    if autoDownload {
+                        Divider().padding(.leading, 56)
+                        OptionRow(systemImage: "internaldrive", title: "Max size", help: nil) {
+                            HStack(spacing: 4) {
+                                TextField("No limit", text: $maxSize)
+                                    .keyboardType(.numberPad)
+                                    .multilineTextAlignment(.trailing)
+                                    .frame(maxWidth: 90)
+                                Text("MB").foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
+                .card()
+            }
+        }
+    }
+
+    private var searchField: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "magnifyingglass")
+                .font(.headline)
+                .foregroundStyle(keywordFocused ? Theme.primary : .secondary)
+            TextField("Search movies, music, books, apps…", text: $keyword)
+                .font(.body)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .submitLabel(.search)
+                .focused($keywordFocused)
+            if !keyword.isEmpty {
+                Button {
+                    keyword = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill").foregroundStyle(.tertiary)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Clear text")
+            }
+        }
+        .padding(.horizontal, 16)
+        .frame(height: 54)
+        .card()
+        .overlay {
+            RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
+                .strokeBorder(keywordFocused ? Theme.primary : .clear, lineWidth: 1.5)
+        }
+        .animation(.easeInOut(duration: 0.15), value: keywordFocused)
+    }
+
+    private var recentKeywords: [String] {
+        var seen = Set<String>()
+        return model.searches.map(\.keyword).filter { seen.insert($0.lowercased()).inserted }.prefix(6).map { $0 }
+    }
+
+    private var recentSearches: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            SectionTitle("Recent")
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(recentKeywords, id: \.self) { recent in
+                        Button {
+                            picked = true
+                            keyword = recent
+                        } label: {
+                            Label(recent, systemImage: "clock.arrow.circlepath")
+                                .font(.subheadline)
+                                .lineLimit(1)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(Theme.cardBackground, in: Capsule())
+                                .overlay(Capsule().strokeBorder(Color(.separator).opacity(0.5)))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
             }
         }
     }
@@ -141,19 +224,22 @@ struct SearchFields: View {
                     keyword = suggestion
                     suggestions = []
                 } label: {
-                    Text(suggestion)
-                        .foregroundStyle(.primary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
-                        .contentShape(Rectangle())
+                    HStack(spacing: 12) {
+                        Image(systemName: "magnifyingglass").font(.footnote).foregroundStyle(.secondary)
+                        Text(suggestion).foregroundStyle(.primary)
+                        Spacer()
+                        Image(systemName: "arrow.up.left").font(.footnote).foregroundStyle(.tertiary)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                if suggestion != suggestions.prefix(6).last { Divider() }
+                if suggestion != suggestions.prefix(6).last { Divider().padding(.leading, 44) }
             }
         }
-        .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 6))
-        .shadow(color: .black.opacity(0.25), radius: 6, y: 3)
+        .background(Theme.cardBackground, in: RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
+        .shadow(color: .black.opacity(0.18), radius: 14, y: 6)
     }
 
     private func loadSuggestions() async {
@@ -175,32 +261,61 @@ struct SearchFields: View {
     }
 }
 
-struct CheckboxToggleStyle: ToggleStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        Button {
-            configuration.isOn.toggle()
-        } label: {
-            HStack(spacing: 12) {
-                Image(systemName: configuration.isOn ? "checkmark.square.fill" : "square")
-                    .font(.title2)
-                    .foregroundStyle(configuration.isOn ? Theme.primary : .secondary)
-                configuration.label.foregroundStyle(.primary)
+struct SectionTitle: View {
+    let text: String
+    init(_ text: String) { self.text = text }
+
+    var body: some View {
+        Text(text)
+            .font(.footnote.weight(.semibold))
+            .textCase(.uppercase)
+            .foregroundStyle(.secondary)
+            .padding(.leading, 4)
+    }
+}
+
+/// One of the four torrent types as a tappable tile.
+private struct TypeChip: View {
+    let type: ContentType
+    let selected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 6) {
+                Image(systemName: type.symbol).font(.title3.weight(.semibold))
+                Text(type.label).font(.caption.weight(.semibold)).lineLimit(1).minimumScaleFactor(0.8)
             }
+            .frame(maxWidth: .infinity)
+            .frame(height: 70)
+            .foregroundStyle(selected ? .white : .primary)
+            .background(selected ? Theme.primary : Theme.cardBackground,
+                        in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .strokeBorder(selected ? .clear : Color(.separator).opacity(0.5)))
         }
         .buttonStyle(.plain)
-        .accessibilityAddTraits(configuration.isOn ? .isSelected : [])
+        .accessibilityLabel(type.label)
+        .accessibilityAddTraits(selected ? .isSelected : [])
     }
 }
 
-private struct Underlined: ViewModifier {
-    func body(content: Content) -> some View {
-        VStack(spacing: 2) {
-            content
-            Rectangle().fill(Color.secondary.opacity(0.5)).frame(height: 1)
+/// A settings-style row: icon, title, optional help, trailing control.
+private struct OptionRow<Control: View>: View {
+    let systemImage: String
+    let title: String
+    let help: (String, String)?
+    @ViewBuilder let control: Control
+
+    var body: some View {
+        HStack(spacing: 12) {
+            IconTile(systemImage: systemImage, size: 30)
+            Text(title).font(.body)
+            if let help { HelpButton(title: help.0, message: help.1) }
+            Spacer(minLength: 8)
+            control
         }
+        .padding(.horizontal, 14)
+        .frame(minHeight: 54)
     }
-}
-
-extension View {
-    func underlined() -> some View { modifier(Underlined()) }
 }

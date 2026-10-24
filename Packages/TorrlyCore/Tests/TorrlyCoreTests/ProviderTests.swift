@@ -64,7 +64,7 @@ struct ProviderTests {
     @Test func readsJSONAPIWithTorrentURLTemplate() async throws {
         let http = MockHTTPClient()
         http.serve("https://archive.org/advancedsearch.php", fixture("archive-search.json"))
-        let provider = try #require(DefaultProviders.load().first?.makeProvider(http: http))
+        let provider = try #require(DefaultProviders.load().first { $0.name == "Internet Archive" }?.makeProvider(http: http))
         let results = try await provider.search(ProviderQuery(text: "ubuntu", contentType: .software))
         #expect(http.requested.first?.absoluteString.contains("title%3A%28ubuntu%29%20AND%20mediatype%3Asoftware") == true)
         #expect(results.count == 2)
@@ -152,4 +152,30 @@ final class Locked<Value>: @unchecked Sendable {
     init(_ value: Value) { stored = value }
     var value: Value { lock.withLock { stored } }
     func mutate(_ body: (inout Value) -> Void) { lock.withLock { body(&stored) } }
+}
+
+struct ProviderImportTests {
+    @Test func skipsMalformedEntriesInsteadOfDroppingTheList() throws {
+        let json = Data("""
+        [
+          { "id": "7B0E3C2A-1F7D-4C55-9A4E-5B1A2D3C4E01", "name": "good", "isEnabled": true,
+            "json": { "url": { "default": "https://good.example/q?{query}" }, "name": "title" } },
+          { "id": "not-a-uuid", "name": "bad id", "isEnabled": true,
+            "json": { "url": { "default": "https://bad.example/q?{query}" }, "name": "title" } },
+          { "id": "1B0E3C2A-1F7D-4C55-9A4E-5B1A2D3C4E02", "name": "missing isEnabled" }
+        ]
+        """.utf8)
+        let providers = try ProviderImport.providers(from: json)
+        #expect(providers.map(\.name) == ["good"])
+    }
+
+    @Test func rejectsAListWithNoUsableEntry() {
+        #expect(throws: ProviderImport.ImportError.self) {
+            try ProviderImport.providers(from: Data(#"[{ "nope": 1 }]"#.utf8))
+        }
+    }
+
+    @Test func bundledListLoads() {
+        #expect(!DefaultProviders.load().isEmpty)
+    }
 }

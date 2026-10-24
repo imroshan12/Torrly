@@ -30,6 +30,16 @@ DerivedData/
 Local.xcconfig
 *.local.xcconfig
 
+# Local working files: saved web pages, one-off scripts and notes (not used by the app or the build)
+sites/
+add_mirrors*.py
+PHASE_*_HANDOFF.md
+*.log
+
+# Python caches
+__pycache__/
+*.pyc
+
 # Editors and OS files
 .vscode/
 .idea/

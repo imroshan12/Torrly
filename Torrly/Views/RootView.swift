@@ -13,7 +13,7 @@ struct RootView: View {
         @Bindable var model = model
         NavigationStack {
             VStack(spacing: 0) {
-                TabStrip(selection: $model.tab)
+                TabStrip(selection: $model.tab, badges: tabBadges)
                 TabView(selection: $model.tab) {
                     HistoryView().tag(AppTab.history)
                     SearchFormView().tag(AppTab.search)
@@ -21,11 +21,18 @@ struct RootView: View {
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
             }
-            .overlay(alignment: .bottomTrailing) { addButton }
+            .background(alignment: .top) {
+                // One solid green behind the title bar and the tab strip, so both read as a single header.
+                Theme.primary.frame(height: 1).ignoresSafeArea(edges: .top)
+            }
+            .background(Theme.screenBackground)
+            .overlay(alignment: .bottomTrailing) {
+                if !model.editingSearch { addButton.transition(.scale.combined(with: .opacity)) }
+            }
+            .animation(.snappy(duration: 0.2), value: model.editingSearch)
             .navigationTitle("Torrly")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(Theme.primary, for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarBackground(.hidden, for: .navigationBar)
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) { menu }
@@ -45,6 +52,13 @@ struct RootView: View {
         }
         .mediaOpener($model.openingFile)
         .toast($model.toast)
+        .fontDesign(.rounded)
+    }
+
+    private var tabBadges: [AppTab: Int] {
+        let active = model.downloads.torrents.filter { !$0.isPaused && !$0.isComplete }.count
+        let searching = model.searches.filter { $0.status == .searching }.count
+        return [.downloads: active, .history: searching]
     }
 
     private var menu: some View {
@@ -70,11 +84,11 @@ struct RootView: View {
             Button("Open .torrent file", systemImage: "doc") { showFileImporter = true }
         } label: {
             Image(systemName: "plus")
-                .font(.title2.weight(.semibold))
+                .font(.title2.weight(.bold))
                 .foregroundStyle(.white)
-                .frame(width: 58, height: 58)
-                .background(Theme.primary, in: Circle())
-                .shadow(color: .black.opacity(0.3), radius: 4, y: 2)
+                .frame(width: 60, height: 60)
+                .background(Theme.primary.gradient, in: Circle())
+                .shadow(color: Theme.primary.opacity(0.45), radius: 10, y: 4)
         }
         .padding(20)
         .accessibilityLabel("add")
@@ -86,9 +100,10 @@ private struct PendingFile: Identifiable {
     var id: URL { url }
 }
 
-/// Green tab strip under the toolbar (HISTORY / SEARCH / DOWNLOADS).
+/// Green tab strip under the toolbar (HISTORY / SEARCH / DOWNLOADS), with a sliding indicator.
 struct TabStrip: View {
     @Binding var selection: AppTab
+    var badges: [AppTab: Int] = [:]
     @Namespace private var underline
 
     var body: some View {
@@ -97,16 +112,29 @@ struct TabStrip: View {
                 Button {
                     withAnimation(.snappy) { selection = tab }
                 } label: {
-                    VStack(spacing: 8) {
-                        Text(tab.title)
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(selection == tab ? .white : .white.opacity(0.7))
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.7)
+                    VStack(spacing: 9) {
+                        HStack(spacing: 6) {
+                            Image(systemName: tab.symbol)
+                                .font(.subheadline.weight(.semibold))
+                            Text(tab.title)
+                                .font(.footnote.weight(.bold))
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.7)
+                            if let count = badges[tab], count > 0 {
+                                Text("\(count)")
+                                    .font(.caption2.weight(.bold))
+                                    .foregroundStyle(Theme.primaryDark)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 1)
+                                    .background(.white, in: Capsule())
+                            }
+                        }
+                        .foregroundStyle(selection == tab ? .white : .white.opacity(0.72))
                         ZStack {
-                            Rectangle().fill(.clear).frame(height: 3)
+                            Capsule().fill(.clear).frame(height: 3)
                             if selection == tab {
-                                Rectangle().fill(.white).frame(height: 3).matchedGeometryEffect(id: "line", in: underline)
+                                Capsule().fill(.white).frame(width: 44, height: 3)
+                                    .matchedGeometryEffect(id: "line", in: underline)
                             }
                         }
                     }
@@ -115,6 +143,7 @@ struct TabStrip: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(tab.title.capitalized)
                 .accessibilityAddTraits(selection == tab ? .isSelected : [])
             }
         }

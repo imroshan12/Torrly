@@ -17,6 +17,14 @@ enum AppTab: Int, CaseIterable, Identifiable {
         case .downloads: "DOWNLOADS"
         }
     }
+
+    var symbol: String {
+        switch self {
+        case .history: "clock.arrow.circlepath"
+        case .search: "magnifyingglass"
+        case .downloads: "arrow.down.circle"
+        }
+    }
 }
 
 /// App state: saved searches and their scheduler, providers and settings (TorrDroid `SearchService`, REPORT.md §2).
@@ -39,6 +47,8 @@ final class AppModel {
     var toast: String?
     /// A finished file to open in the player or Quick Look.
     var openingFile: OpenableFile?
+    /// The search field is being edited (the floating + button steps aside).
+    var editingSearch = false
     /// Search to scroll to in History (from a notification tap).
     var focusedSearch: UUID?
 
@@ -62,7 +72,12 @@ final class AppModel {
         downloads = DownloadManager(settings: loadedSettings)
         downloads.notifier = notifier
         searches = searchStore.load() ?? []
-        providers = providerStore.load() ?? DefaultProviders.load()
+        // An empty saved list (or none) means "use the built-in providers".
+        if let saved = providerStore.load(), !saved.isEmpty {
+            providers = saved
+        } else {
+            providers = DefaultProviders.load()
+        }
         // A search interrupted by the app being killed is queued again.
         for index in searches.indices where searches[index].status == .searching {
             searches[index].status = searches[index].isActive ? .queued : .idle

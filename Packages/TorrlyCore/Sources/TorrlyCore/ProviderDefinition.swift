@@ -97,8 +97,16 @@ public struct TypeValidation: Codable, Hashable, Sendable {
 }
 
 /// A list of patterns for a specific content type. Decodes from either a single String or an Array of Strings.
-public struct PatternList: Codable, Hashable, Sendable {
+public struct PatternList: Codable, Hashable, Sendable, ExpressibleByStringLiteral {
     public let patterns: [String]
+
+    public init(_ patterns: [String]) {
+        self.patterns = patterns
+    }
+
+    public init(stringLiteral value: String) {
+        self.patterns = [value]
+    }
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
@@ -236,4 +244,59 @@ public struct JSONAPIRules: Codable, Hashable, Sendable {
     public var category: String?
     /// Results where `field` equals the given value are skipped (e.g. a "no results" placeholder row).
     public var skipWhen: [String: String]?
+    public var typeValidation: TypeValidation?
+
+    public init(url: URLTemplates, resultsPath: String? = nil, name: String, size: String? = nil, seeds: String? = nil,
+                leechers: String? = nil, infoHash: String? = nil, magnet: String? = nil, torrentURL: String? = nil,
+                category: String? = nil, skipWhen: [String: String]? = nil, typeValidation: TypeValidation? = nil) {
+        self.url = url
+        self.resultsPath = resultsPath
+        self.name = name
+        self.size = size
+        self.seeds = seeds
+        self.leechers = leechers
+        self.infoHash = infoHash
+        self.magnet = magnet
+        self.torrentURL = torrentURL
+        self.category = category
+        self.skipWhen = skipWhen
+        self.typeValidation = typeValidation
+    }
+}
+
+public enum ProviderImport {
+    public enum ImportError: LocalizedError {
+        case unrecognized
+
+        public var errorDescription: String? {
+            "Expected a provider, a list of providers, or a TorrDroid-style siteSettings object."
+        }
+    }
+
+    /// Accepts a Torrly provider, an array of them, or a TorrDroid `siteSettings` map (`{ "https://site": rules }`).
+    /// In an array, entries that don't decode (e.g. a malformed `id`) are skipped so the rest still load.
+    public static func providers(from data: Data) throws -> [ProviderDefinition] {
+        let decoder = JSONDecoder()
+        if let entries = try? decoder.decode([LenientEntry].self, from: data) {
+            let list = entries.compactMap(\.provider)
+            if !list.isEmpty { return list }
+        }
+        if let single = try? decoder.decode(ProviderDefinition.self, from: data) { return [single] }
+        if let map = try? decoder.decode([String: HTMLSiteRules].self, from: data), !map.isEmpty {
+            return map.keys.sorted().compactMap { key in
+                guard let rules = map[key] else { return nil }
+                let name = URL(string: key)?.host() ?? key
+                return ProviderDefinition(name: name, html: rules)
+            }
+        }
+        throw ImportError.unrecognized
+    }
+
+    private struct LenientEntry: Decodable {
+        let provider: ProviderDefinition?
+
+        init(from decoder: Decoder) throws {
+            provider = try? ProviderDefinition(from: decoder)
+        }
+    }
 }

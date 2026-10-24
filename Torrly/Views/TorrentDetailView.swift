@@ -18,17 +18,23 @@ struct TorrentDetailView: View {
         Group {
             if let torrent = model.downloads.torrent(infoHash) {
                 VStack(spacing: 0) {
+                    TorrentHeader(torrent: torrent)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 12)
                     Picker("Section", selection: $section) {
                         ForEach(Section.allCases) { Text($0.rawValue).tag($0) }
                     }
                     .pickerStyle(.segmented)
-                    .padding()
-                    switch section {
-                    case .info: InfoSection(torrent: torrent)
-                    case .files: FilesSection(torrent: torrent)
-                    case .trackers: TrackersSection(torrent: torrent)
-                    case .pieces: PiecesSection(torrent: torrent)
+                    .padding(16)
+                    Group {
+                        switch section {
+                        case .info: InfoSection(torrent: torrent)
+                        case .files: FilesSection(torrent: torrent)
+                        case .trackers: TrackersSection(torrent: torrent)
+                        case .pieces: PiecesSection(torrent: torrent)
+                        }
                     }
+                    .contentMargins(.top, 0, for: .scrollContent)
                 }
                 .navigationTitle(torrent.name)
                 .toolbar {
@@ -45,8 +51,58 @@ struct TorrentDetailView: View {
                 ContentUnavailableView("Torrent removed", systemImage: "trash")
             }
         }
+        .background(Theme.screenBackground)
         .navigationBarTitleDisplayMode(.inline)
         .greenNavigationBar()
+    }
+}
+
+/// Progress ring with the torrent's name, state and speeds.
+private struct TorrentHeader: View {
+    @Environment(AppModel.self) private var model
+    let torrent: EngineTorrentStatus
+
+    var body: some View {
+        let tint = Theme.color(for: torrent)
+        HStack(spacing: 16) {
+            ZStack {
+                Circle().stroke(Color(.tertiarySystemFill), lineWidth: 7)
+                Circle()
+                    .trim(from: 0, to: CGFloat(torrent.progress))
+                    .stroke(tint, style: StrokeStyle(lineWidth: 7, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+                    .animation(.easeOut(duration: 0.4), value: torrent.progress)
+                Text("\(Int((torrent.progress * 100).rounded(.down)))%")
+                    .font(.subheadline.weight(.bold))
+                    .monospacedDigit()
+            }
+            .frame(width: 70, height: 70)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(torrent.name).font(.headline).lineLimit(2)
+                StatusBadge(text: torrent.stateTitle, tint: tint)
+                HStack(spacing: 6) {
+                    StatChip(systemImage: "arrow.down", text: Format.speed(Int(torrent.downloadRate)), tint: Theme.primary)
+                    StatChip(systemImage: "arrow.up", text: Format.speed(Int(torrent.uploadRate)), tint: .teal)
+                    StatChip(systemImage: "person.2", text: "\(torrent.connectedPeers)")
+                }
+            }
+            Spacer(minLength: 0)
+            if torrent.isComplete {
+                Button {
+                    model.openDownload(torrent)
+                } label: {
+                    Image(systemName: "play.fill")
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                        .frame(width: 46, height: 46)
+                        .background(Theme.primary, in: Circle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Play")
+            }
+        }
+        .padding(14)
+        .card()
     }
 }
 
@@ -58,14 +114,10 @@ private struct InfoSection: View {
     var body: some View {
         List {
             SwiftUI.Section {
-                LabeledContent("Status", value: torrent.stateTitle)
-                LabeledContent("Progress", value: "\(Int(torrent.progress * 100))%")
                 LabeledContent("Size", value: torrent.hasMetadata ? Format.bytes(torrent.totalWanted) : "Fetching metadata")
                 LabeledContent("Downloaded", value: Format.bytes(torrent.totalWantedDone))
                 LabeledContent("Uploaded", value: Format.bytes(torrent.totalUploaded))
                 LabeledContent("Ratio", value: ratio)
-                LabeledContent("Download speed", value: Format.speed(Int(torrent.downloadRate)))
-                LabeledContent("Upload speed", value: Format.speed(Int(torrent.uploadRate)))
                 LabeledContent("Time left", value: Format.eta(remaining: torrent.totalWanted - torrent.totalWantedDone, rate: Int(torrent.downloadRate)))
                 LabeledContent("Seeds", value: "\(torrent.connectedSeeds) (\(max(0, torrent.totalSeeds)))")
                 LabeledContent("Peers", value: "\(torrent.connectedPeers) (\(max(0, torrent.totalPeers)))")
